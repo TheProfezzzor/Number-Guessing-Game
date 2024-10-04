@@ -12,6 +12,8 @@ public class NumberGame : MonoBehaviour
     [SerializeField] TMP_Text hintText;
     [SerializeField] TMP_InputField inputField;
     [SerializeField] Button submitButton;
+    [SerializeField] Button restartButton;
+    [SerializeField] Toggle keepPlayers;
     // The game state.
     byte gameState; // 1-byte integer.
     // Other game fields.
@@ -67,11 +69,7 @@ public class NumberGame : MonoBehaviour
                 players[1] = inputField.text.ToLower().FirstCharacterToUpper();
                 p2Text.text = "Player 2: " + players[1]; // or: p2Text.text += players[1];
                 // Initialize next state.
-                gameState = 3;
-                targetNumber = Random.Range(1, 101); // Generating random number.
-                currentPlayer = (byte)Random.Range(0, 2); // Randomizing who goes first. 0 or 1.
-                inputField.text = ""; // Clear the text in the inputField.
-                statusText.text = players[currentPlayer] + ", enter a number between 1 and 100:";
+                InitState3();
             }
         }
         else if (gameState == 3)
@@ -92,6 +90,8 @@ public class NumberGame : MonoBehaviour
                     hs.SetSprite(3);
                     statusText.text = "Game over. " + players[currentPlayer] + " wins!";
                     inputField.gameObject.SetActive(false);
+                    restartButton.gameObject.SetActive(true);
+                    keepPlayers.gameObject.SetActive(true);
                     submitButton.GetComponentInChildren<TMP_Text>().text = "Quit";
                     gameState = 4;
                 }
@@ -119,5 +119,34 @@ public class NumberGame : MonoBehaviour
         {
             Application.Quit();
         }
+    }
+
+    public void ParseRestart()
+    {
+        // Common cleanup.
+        inputField.gameObject.SetActive(true); // Bring back the input field.
+        restartButton.gameObject.SetActive(false); // Hide the restart button.
+        keepPlayers.gameObject.SetActive(false); // Hide the toggle.
+        submitButton.GetComponentInChildren<TMP_Text>().text = "Submit"; // Rename back to Submit
+        if (keepPlayers.isOn) // Case for restart with current players. Game state goes back to 3.
+        {
+            InitState3();
+        }
+        else // Case for restart with new players. Game state goes back to 0.
+        {
+            p1Text.text = "Player 1: "; // Clear previous player 1 name.
+            p2Text.text = "Player 2: "; // Clear previous player 2 name.
+            Initialize();
+        }
+    }
+
+    private void InitState3()
+    {
+        gameState = 3;
+        targetNumber = Random.Range(1, 101); // Generating random number.
+        currentPlayer = (byte)Random.Range(0, 2); // Randomizing who goes first. 0 or 1.
+        inputField.text = ""; // Clear the text in the inputField.
+        hintText.gameObject.SetActive(false);
+        statusText.text = players[currentPlayer] + ", enter a number between 1 and 100:";
     }
 }
